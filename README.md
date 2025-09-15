@@ -17,9 +17,9 @@
 - Results, the model performance (test, valid), the loss, predictions (like use of confusion matrices etc...)
 - Also include the steps you took to tune your hyperparameter, architecture etc... (tell the whole story along the way)
 - Did you have a benchmark model?
--Did your plan of attack make sense, now you have a better idea?
--Do you do differently next time?
--Conclusions
+- Did your plan of attack make sense, now you have a better idea?
+- Do you do differently next time?
+- Conclusions
 
 ## Roles
 
