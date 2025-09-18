@@ -1,4 +1,5 @@
 import sys
+from typing import overload
 import numpy as np
 from scipy.fft import fft, fftfreq, ifft
 from scipy.signal import spectrogram
@@ -226,7 +227,7 @@ def time_avg_harmonic_profile(
     return x_mult, P_mean, P_rel_mean
 
 
-def process_audio(
+def process_audio_wav(
     wav_filepath: str, 
     nperseg=4096, noverlap=256,                     # spectrogram
     num_peaks=3,                                    # peak finding
@@ -255,10 +256,40 @@ def process_audio(
         x = x / np.iinfo(x.dtype).max
     x = x.astype(np.float32, copy=False)
 
+    return process_audio_array(x, sampling_rate=sr, 
+                                nperseg=nperseg, noverlap=noverlap,
+                                num_peaks=num_peaks,
+                                num_orders=num_orders, bins_per_interval=bins_per_interval,
+                                normalize_at_1x=normalize_at_1x,
+                                to_decibel=to_decibel)
+
+
+def process_audio_array(
+    x: np.ndarray,
+    sampling_rate= 44100,
+    nperseg=4096, noverlap=256,                     # spectrogram
+    num_peaks=3,                                    # peak finding
+    num_orders=8, bins_per_interval = 40,           # order domain
+    normalize_at_1x=False,                          # time averaging
+    to_decibel=True                                 # spectrum return
+):
+    """
+    Process sample array into order-domain, time-independent, spectrum and cepstrum
+
+    Arguments:
+        x   : (len) float array normalized to -1 to 1
+
+    Returns:
+        spectrum_power  : (len) power (amplitude**2), in dB if `to_decibel=True`
+        cepstrum_mag    : (len) magnitude of cepstrum (not in dB), the first 
+                                cell is replaced with zero magnitude
+        spectrum_order  : (len) order of fundamental frequency
+        cepstrum_qref   : (len) quefrency
+    """
+
+
     # ---- STFT/Spectrogram ----
-    nperseg = 4096
-    noverlap = 256
-    f, t, Sxx = spectrogram(x, fs=sr, nperseg=nperseg, noverlap=noverlap)
+    f, t, Sxx = spectrogram(x, fs=sampling_rate, nperseg=nperseg, noverlap=noverlap)
 
     # ---- Finding top K peaks ----
     top_idx, top_vals = topk_local_maxima_per_col(Sxx, num_peaks)
