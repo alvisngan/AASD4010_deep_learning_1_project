@@ -209,8 +209,10 @@ def time_avg_harmonic_profile(
         Sxx, fund_idx, num_orders=num_orders, bins_per_interval=bins_per_interval
     )  # (L, T)
 
+    S_mult = np.nan_to_num(S_mult, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32, copy=False)
+
     # Average POWER over time (ignore NaN frames)
-    P_mean = np.nanmean(S_mult, axis=1)  # linear power
+    P_mean = S_mult.mean(axis=1)
     x_mult = np.arange(P_mean.size, dtype=float) / float(bins_per_interval)
 
     if not normalize_at_1x:
