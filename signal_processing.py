@@ -2,6 +2,8 @@ import sys
 import numpy as np
 from scipy.fft import fft, fftfreq, ifft
 from scipy.signal import spectrogram
+from scipy.fft import fft, ifft
+from scipy.io import wavfile
 
 def topk_local_maxima_per_col(S, k, index_offset=0):
     """
@@ -211,14 +213,85 @@ def time_avg_harmonic_profile(
     x_mult = np.arange(P_mean.size, dtype=float) / float(bins_per_interval)
 
     if not normalize_at_1x:
-        return x_mult, P_mean
+        return x_mult, P_mean, None
 
     # Per-frame normalization at 1× (still power)
     i1 = bins_per_interval  # index corresponding to 1×
     valid = np.isfinite(S_mult[i1, :])
     if not np.any(valid):
-        return x_mult, P_mean
+        return x_mult, P_mean, None
 
     P_rel = S_mult[:, valid] / (S_mult[i1, valid][None, :] + 1e-12)
     P_rel_mean = np.nanmean(P_rel, axis=1)
     return x_mult, P_mean, P_rel_mean
+
+
+def process_audio(
+    wav_filepath: str, 
+    nperseg=4096, noverlap=256,                     # spectrogram
+    num_peaks=3,                                    # peak finding
+    num_orders=8, bins_per_interval = 40,           # order domain
+    normalize_at_1x=False,                          # time averaging
+    to_decibel=True                                 # spectrum return
+):
+    """
+    Process .wav file into order-domain, time-independent, spectrum and cepstrum
+
+    Returns:
+        spectrum_power  : (len) power (amplitude**2), in dB if `to_decibel=True`
+        cepstrum_mag    : (len) magnitude of cepstrum (not in dB), the first 
+                                cell is replaced with zero magnitude
+        spectrum_order  : (len) order of fundamental frequency
+        cepstrum_qref   : (len) quefrency
+    """
+
+    # ---- Reading the .wav file  ----
+    sr, x = wavfile.read(wav_filepath)
+
+    # Mono + float normalize to [-1, 1]
+    if x.ndim == 2:
+        x = x.mean(axis=1)
+    if np.issubdtype(x.dtype, np.integer):
+        x = x / np.iinfo(x.dtype).max
+    x = x.astype(np.float32, copy=False)
+
+    # ---- STFT/Spectrogram ----
+    nperseg = 4096
+    noverlap = 256
+    f, t, Sxx = spectrogram(x, fs=sr, nperseg=nperseg, noverlap=noverlap)
+
+    # ---- Finding top K peaks ----
+    top_idx, top_vals = topk_local_maxima_per_col(Sxx, num_peaks)
+
+    # ---- Fundamental from rolling-average of peaks ----
+    fund_idx = fundamental_per_col(top_idx)
+
+    # ---- Transform to order domain + time averaging ----
+    x_mult, P_mean, P_rel_mean = time_avg_harmonic_profile(
+        Sxx, fund_idx,
+        num_orders=num_orders,
+        bins_per_interval=bins_per_interval,
+        normalize_at_1x=normalize_at_1x
+    )
+
+    # ---- convert to dB ----
+    if to_decibel:
+        eps = 1e-12
+        P_mean_db = 10.0 * np.log10(P_mean + eps)
+        P_rel_mean_db = None if P_rel_mean is None else 10.0 * np.log10(P_rel_mean + eps)
+
+    # ---- Cepstrum ----
+    len_cepstrum = len(P_mean) // 2
+    cep_mag = np.abs(ifft(np.log(P_mean))[0 : len_cepstrum])
+    quef = np.arange(0, len_cepstrum) / (len(P_mean) / bins_per_interval)
+    
+    # discarding the first magnitude
+    cep_mag[0] = 0.0
+
+    # ---- returns ----
+    if to_decibel:
+        spectrum_power = P_mean_db
+    else:
+        spectrum_power = P_mean
+    
+    return spectrum_power, cep_mag, x_mult, quef
