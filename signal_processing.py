@@ -233,7 +233,7 @@ def process_audio_wav(
     wav_filepath: str, 
     nperseg=4096, noverlap=256,                     # spectrogram
     num_peaks=3,                                    # peak finding
-    num_orders=8, bins_per_interval = 40,           # order domain
+    num_orders=8, bins_per_interval = 30,           # order domain
     normalize_at_1x=False,                          # time averaging
     to_decibel=True                                 # spectrum return
 ):
@@ -271,7 +271,7 @@ def process_audio_array(
     sampling_rate= 44100,
     nperseg=4096, noverlap=256,                     # spectrogram
     num_peaks=3,                                    # peak finding
-    num_orders=8, bins_per_interval = 40,           # order domain
+    num_orders=8, bins_per_interval = 30,           # order domain
     normalize_at_1x=False,                          # time averaging
     to_decibel=True                                 # spectrum return
 ):
