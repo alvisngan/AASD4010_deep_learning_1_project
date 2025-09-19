@@ -315,7 +315,7 @@ def process_audio_array(
 
     # ---- Cepstrum ----
     len_cepstrum = len(P_mean) // 2
-    cep_mag = np.abs(ifft(np.log(P_mean))[0 : len_cepstrum])
+    cep_mag = np.abs(ifft(np.log(np.abs(P_mean) + eps))[0 : len_cepstrum])
     quef = np.arange(0, len_cepstrum) / (len(P_mean) / bins_per_interval)
     
     # discarding the first magnitude
