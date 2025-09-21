@@ -5,6 +5,7 @@ from scipy.fft import fft, fftfreq, ifft
 from scipy.signal import spectrogram
 from scipy.fft import fft, ifft
 from scipy.io import wavfile
+import matplotlib.pyplot as plt
 
 def topk_local_maxima_per_col(S, k, index_offset=0):
     """
@@ -328,3 +329,46 @@ def process_audio_array(
         spectrum_power = P_mean
     
     return spectrum_power, cep_mag, x_mult, quef
+
+
+def plot_audio_file(
+    wav_filepath: str, 
+    plot_name=None,
+    show=True,
+    save=False,
+    nperseg=4096, noverlap=256,                     # spectrogram
+    num_peaks=3,                                    # peak finding
+    num_orders=8, bins_per_interval = 30,           # order domain
+    normalize_at_1x=False,                          # time averaging
+    to_decibel=True                                 # spectrum return
+):
+    spec_power_db, ceps_mag, spec_order, ceps_qref = process_audio_wav(wav_filepath)
+
+    # Create subplots
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))  # 2 rows, 1 column
+    if plot_name != None:
+        plt.title(plot_name)
+
+    # First subplot: harmonic profile
+    ax1.plot(spec_order, spec_power_db)
+    ax1.set_xlabel("Multiple of fundamental (× f0)")
+    ax1.set_ylabel("Power [dB]")
+    ax1.set_title("Time-independent harmonic profile (dB)")
+
+    # Second subplot: cepstrum
+    ax2.plot(ceps_qref, ceps_mag)
+    ax2.set_xlabel("Quefrency")
+    ax2.set_ylabel("Magnitude")
+    ax2.set_title("Cepstrum")
+
+    # Adjust layout
+    plt.tight_layout()
+
+    # Save
+    if save & (plot_name != None):
+        print("saving plot")
+        plt.savefig(plot_name + ".png")  
+
+    plt.show()
+
+
