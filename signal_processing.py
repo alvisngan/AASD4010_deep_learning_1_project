@@ -242,11 +242,11 @@ def process_audio_wav(
     Process .wav file into order-domain, time-independent, spectrum and cepstrum
 
     Returns:
-        spectrum_power  : (len) power (amplitude**2), in dB if `to_decibel=True`
-        cepstrum_mag    : (len) magnitude of cepstrum (not in dB), the first 
+        spectrum_power  : (num_orders * bins_per_interval + 1) power (amplitude**2), in dB if `to_decibel=True`
+        cepstrum_mag    : (len(spectrum_power)//2) magnitude of cepstrum (not in dB), the first 
                                 cell is replaced with zero magnitude
-        spectrum_order  : (len) order of fundamental frequency
-        cepstrum_qref   : (len) quefrency
+        spectrum_order  : (num_orders * bins_per_interval + 1) order of fundamental frequency
+        cepstrum_qref   : (len(spectrum_power)//2n) quefrency
     """
 
     # ---- Reading the .wav file  ----
