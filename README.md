@@ -11,3 +11,14 @@ This project uses signal processing techniques and convolutional neural network 
 | [signal_processing_demo.ipynb](./signal_processing_demo.ipynb) | Demostrating signal processing techniques used in [signal_processing.py](./signal_processing.py) |
 
 ## Environment
+
+```sh
+# Create environment
+python3 -m venv .venv
+
+# Initiate environment (Unix-likes)
+source .venv/bin/activate
+
+# Install required packages
+pip install -r requirements.txt
+```
