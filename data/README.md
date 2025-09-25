@@ -1,6 +1,6 @@
 # Data Scraper
 
-We do not upload audio data directly to github, but we provide you with the tools to do so.
+I am not uploading audio data directly to github, but here is the tools to download the data yourself.
 
 ## Tutorial
 
