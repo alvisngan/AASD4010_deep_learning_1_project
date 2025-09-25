@@ -1,6 +1,6 @@
 # Data Scraper
 
-I am not uploading audio data directly to github, but here is the tools to download the data yourself.
+We do not upload audio data directly to github, but we provide you with the tools to do so.
 
 ## Tutorial
 
@@ -12,7 +12,7 @@ I am not uploading audio data directly to github, but here is the tools to downl
 # Create python environment
 python3 -m venv .venv
 
-# Initiate environment (Unix-like OS's)
+# Activate environment (Unix-likes)
 source .venv/bin/activate
 
 # Install required packages

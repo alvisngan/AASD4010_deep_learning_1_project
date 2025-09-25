@@ -5,3 +5,7 @@ __pycache__
 *.png
 *.pt
 *.wav
+.venv-309/
+.venv-312/
+data/data_dir/
+.DS_Store

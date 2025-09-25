@@ -371,4 +371,72 @@ def plot_audio_file(
 
     plt.show()
 
+def noise_reduction(input_dir, output_dir):
+    import os
+    import numpy as np
+    from scipy.io import wavfile
+    from scipy.fft import fft, ifft
 
+    # Step 1: Traverse the input directory and collect .wav files
+    audio_files = []
+    for root, _, files in os.walk(input_dir):
+        for file in files:
+            if file.endswith('.wav'):
+                audio_files.append(os.path.join(root, file))
+                
+    # Step 2: Read audio files and compute FFT
+    spectra = []
+    for file in audio_files:
+        sr, audio = wavfile.read(file)
+        if audio.ndim > 1:  # Convert stereo to mono if necessary
+            audio = np.mean(audio, axis=1)
+        
+        # Normalize audio
+        if np.issubdtype(audio.dtype, np.integer):
+            audio = audio / np.iinfo(audio.dtype).max
+        elif np.issubdtype(audio.dtype, np.floating):
+            audio = audio / np.max(np.abs(audio))
+        
+        spectrum = fft(audio)
+        spectra.append(spectrum)
+
+    # Ensure all spectra have the same length by padding or truncating
+    max_length = max(len(spectrum) for spectrum in spectra)
+    padded_spectra = [
+        np.pad(spectrum, (0, max_length - len(spectrum)), mode='constant')
+        if len(spectrum) < max_length else spectrum[:max_length]
+        for spectrum in spectra
+    ]
+
+    # Step 3: Compute the average spectrum (noise profile)
+    avg_spectrum = np.mean(np.abs(padded_spectra), axis=0)
+
+    # Step 4: Subtract the noise profile and perform inverse FFT
+    saved_files = 0
+    for i, file in enumerate(audio_files):
+        spectrum = spectra[i]
+
+        # Ensure the spectrum matches the length of avg_spectrum
+        if len(spectrum) < len(avg_spectrum):
+            spectrum = np.pad(spectrum, (0, len(avg_spectrum) - len(spectrum)), mode='constant')
+        elif len(spectrum) > len(avg_spectrum):
+            spectrum = spectrum[:len(avg_spectrum)]
+
+        # Subtract the noise profile
+        magnitude = np.abs(spectrum) - avg_spectrum
+        magnitude = np.maximum(magnitude, 0)  # Ensure no negative values
+        phase = np.angle(spectrum)
+        filtered_spectrum = magnitude * np.exp(1j * phase)
+        filtered_audio = np.real(ifft(filtered_spectrum))
+
+        # Recreate the directory structure in the output folder
+        relative_path = os.path.relpath(os.path.dirname(file), input_dir)
+        output_subdir = os.path.join(output_dir, relative_path)
+        os.makedirs(output_subdir, exist_ok=True)
+
+        # Save the filtered audio
+        output_path = os.path.join(output_subdir, os.path.basename(file))
+        wavfile.write(output_path, sr, filtered_audio.astype(np.int16))
+        saved_files += 1
+
+    print(f"Filtered audio files saved: {saved_files}")
