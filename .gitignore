@@ -4,3 +4,4 @@ __pycache__
 *.c
 *.png
 *.pt
+*.wav
