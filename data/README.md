@@ -12,7 +12,7 @@ I am not uploading audio data directly to github, but here is the tools to downl
 # Create python environment
 python3 -m venv .venv
 
-# Activate environment (Unix-likes)
+# Initiate environment (Unix-like OS's)
 source .venv/bin/activate
 
 # Install required packages

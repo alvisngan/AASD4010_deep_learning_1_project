@@ -16,7 +16,7 @@ This project uses signal processing techniques and convolutional neural network 
 # Create environment
 python3 -m venv .venv
 
-# Initiate environment (Unix-likes)
+# Initiate environment (Unix-like OS's)
 source .venv/bin/activate
 
 # Install required packages
