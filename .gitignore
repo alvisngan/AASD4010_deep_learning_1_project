@@ -9,3 +9,6 @@ __pycache__
 .venv-312/
 data/data_dir/
 .DS_Store
+downloads/
+data/
+.venv-metal
