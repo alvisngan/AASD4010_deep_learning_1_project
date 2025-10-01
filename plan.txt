@@ -1,0 +1,11 @@
+For report,
+
+LSTM binary classification plots
+    Before data leakage issue (appendix)
+    After data leakage fix
+    Plots of accuracy vs...
+        Epoch (done)
+        LSTM units per layer
+        Dropout
+
+    Add ML model roundup as point of comparison
